@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  button#callButton 서버실행
+
+  script.
+    document.getElementById("callButton").addEventListener("click", clickFunction)
+    function clickFunction() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === xhr.DONE) { 
+          if (xhr.status === 200 || xhr.status === 201) {
+            console.log(xhr.responseText);
+          } else {
+            console.error(xhr.responseText);
+          }
+        }
+     };
+     xhr.open("GET", "http://127.0.0.1:3000/tcpCall");
+     xhr.send();
+   }
