@@ -4,10 +4,11 @@ block content
   h1= title
   p Welcome to #{title}
   button#callButton 서버실행
+  button#cancelButton 서버중지
 
   script.
-    document.getElementById("callButton").addEventListener("click", clickFunction)
-    function clickFunction() {
+    document.getElementById("callButton").addEventListener("click", callFunction)
+    function callFunction() {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
         if (xhr.readyState === xhr.DONE) { 
@@ -21,3 +22,19 @@ block content
      xhr.open("GET", "http://127.0.0.1:3000/tcpCall");
      xhr.send();
    }
+   document.getElementById("cancelButton").addEventListener("click", cancelFunction)
+       function cancelFunction() {
+         var xhr = new XMLHttpRequest();
+         xhr.onreadystatechange = function() {
+           if (xhr.readyState === xhr.DONE) {
+             if (xhr.status === 200 || xhr.status === 201) {
+               console.log(xhr.responseText);
+             } else {
+               console.error(xhr.responseText);
+             }
+           }
+        };
+        xhr.open("GET", "http://127.0.0.1:3000/tcpCancel");
+        xhr.send();
+      }
+
