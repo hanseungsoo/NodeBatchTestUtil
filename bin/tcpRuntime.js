@@ -1,43 +1,40 @@
 const net = require('net')
-const debug = require('debug')('tcpRuntime:Server')
-const recvBkFtc = require('./batchStyle/bkFtc/recvBkFtc')
-const { lengthChecker } = require('./util/batchUtil')
-const { bkFtcSpec } = require('./batchStyle/messageSpec')
+const logger = require('./util/logger')
+const endpointReader = require('./util/readEndpoint')
+const socketHolder = require('./util/SocketHolder')
 
-module.exports = () => {
+module.exports = (endpointName, callback) => {
+    const that = this
+    endpointReader(endpointName).then((endpointData) => {
+        const server = net.createServer( (client) => {
+            logger.info('## Client connected')
+            logger.info(`-> Remote Ip [${client.remoteAddress}], Remote Port [${client.remotePort}]`)
+    
+            client.on('end', () => {
+                logger.info('## client closed')
+                logger.info(`-> Remote Ip [${client.remoteAddress}], Remote Port [${client.remotePort}]`)
+            })
+    
+            client.on('data', (chunk) => {
+                client.write(chunk)
+            })
+            //server.maxConnections = endpointData.maxConnection
+            server.maxConnections = 1
+        })
+        server.listen(endpointData.PORT, () => {
+            logger.info('## Server listen success')
+            logger.info(`-> Listen port [${endpointData.PORT}]`)
+            socketHolder.endpointName = endpointName
+            socketHolder.clientSocket = server
+            socketHolder.endpointPort = endpointData.PORT
+            callback({ state: 'RUNNING' })
+        })
 
-	const server = net.createServer( (client) => {
-		debug('client connected')
-
-		client.on('end', () => {
-			debug('client disconnected')
-		})
-
-		client.on('data', (chunk) => {
-		    const sendStyle = new recvBkFtc(client)
-
-            while ( chunk.length !== 0 ) {
-                debug(chunk.length)
-                let tx = sendStyle.txAnalyzer(chunk)
-                debug('[TX] : [' + tx + ']')
-
-                switch ( tx ) {
-                    case '0600':
-                        let messageSize = lengthChecker(chunk, 'bkFtc')
-                        messageBufObj = sendStyle.headerMessageParser( chunk, messageSize )
-                        sendStyle.txStartReq(messageBufObj.realBuf)
-                        sendStyle.txStartRes(messageBufObj.realBuf)
-                        chunk = messageBufObj.remainBuf
-                        break
-                }
-
-            }
-		})
-	})
-
-	server.on('close', () => {
-		debug('close Server')
-	})
-
-	return server
+        server.on('close', () => {
+            logger.info('## Server closed')
+        })
+    }).catch((err) => {
+        logger.info(`## Loading fail [${endpointName}]`)
+        callback({ state: 'FAILED', message: err.message })
+    })
 }

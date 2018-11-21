@@ -3,9 +3,9 @@ const http = require('http')
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
-const logger = require('morgan')
+const morgan = require('morgan')
 const session = require('express-session')
-const debug = require('debug')('app:open');
+const logger = require('./bin/util/logger')
 require('dotenv').config()
 
 //router init
@@ -17,7 +17,7 @@ var app = express()
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'pug')
 
-app.use(logger('dev'))
+app.use(morgan('dev'))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -51,6 +51,7 @@ app.use(function(err, req, res, next) {
 })
 
 const port = process.env.PORT || '3000'
+
 http.createServer(app).listen(port, () => {
-	debug('server listen to %d', port)
+	logger.info(`server listen to ${port}`)
 })

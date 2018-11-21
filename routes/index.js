@@ -1,9 +1,9 @@
 const express = require('express');
-const tcpServer = require('../bin/tcpRuntime')
-const debug = require('debug')('router:Index')
-const socketHolder = require('../bin/classes/SocketHolder')
+const tcpRuntime = require('../bin/tcpRuntime')
+const logger = require('../bin/util/logger')
+const socketHolder = require('../bin/util/SocketHolder')
 const router = express.Router();
-let saveSocket = new socketHolder()
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -11,29 +11,18 @@ router.get('/', function(req, res, next) {
 })
 
 router.get('/tcpCall', (req, res) => {
-	const serverSocket = tcpServer()
-	serverSocket.listen(3333, () => {
-		debug('server bound')
-		saveSocket.socket = serverSocket
-		saveSocket.port = 3333
-
-		res.json( { state: 'RUNNING' } )
-	})
-
-	serverSocket.on('error', (err) => {
-            debug(err)
-            server.close()
-            res.json( { state: 'FAIL' } )
+    //const resData = tcpRuntime(req.param.endpointName)
+    const resData = tcpRuntime('testEp', (obj) => {
+        res.json(obj)
     })
 })
 
 router.get('/tcpCancel', (req, res) => {
-    const socket = saveSocket.getSocket()
-    if( socket === undefined) {
+    const clientSocket = socketHolder.clientSocket
+    if( clientSocket === undefined) {
         res.json( { state: 'FAIL' } )
     } else {
-        socket.close( () => {
-            debug('server closed')
+        clientSocket.close( () => {
             res.json( { state: 'STOP' } )
         })
     }

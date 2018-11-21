@@ -52,16 +52,3 @@ class recvBkFtc{
 
 module.exports = recvBkFtc
 
-//module.exports.ctr0600 = ( buf, socket ) => {
-//    debug('[RECV] : [' + buf.toString() + ']')
-//	return socket.write(buf, () => {
-//	    debug('[SEND] : [' + buf.toString() + ']')
-//	})
-//}
-
-//module.exports.txAnalyzer = ( orgBuf ) => {
-//    const txBuf =  Buffer.from(orgBuf, 15, 4);
-//
-//    return txBuf
-//}
-
